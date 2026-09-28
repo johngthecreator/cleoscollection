@@ -1,0 +1,1 @@
+ALTER TABLE "sale" ALTER COLUMN "original_price" DROP NOT NULL;
