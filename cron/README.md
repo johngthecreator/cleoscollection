@@ -1,8 +1,8 @@
 # Product scraper cron
 
-Install the Python dependencies with `python -m pip install -r cron/requirements.txt`.
+Install and lock the Python dependencies with `uv sync` from the `cron/` directory.
 
-Set `DATABASE_URL` and `BRIGHTDATA_API_KEY` in `web-app/.env`, then run `python cron/cron.py` from the repository root.
+Set `DATABASE_URL` and `BRIGHTDATA_API_KEY` in `web-app/.env`, then run `uv run cron.py` from the `cron/` directory.
 
 The cron job reflects the live PostgreSQL `sale` table when it starts, so apply
 schema changes with the Drizzle migrations before running the Python job. The

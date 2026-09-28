@@ -81,6 +81,7 @@ SELLERS = [
 
 
 def main():
+    print("---------- Scraping Started ------------")
     try:
         for seller in SELLERS:
             response = brightdata_scraper(seller["url"])
@@ -109,6 +110,7 @@ def main():
     finally:
         # Railway cron deployments must exit and release DB connections.
         engine.dispose()
+    print("---------- Scraping Done! -----------")
 
 
 if __name__ == "__main__":
