@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
+load_dotenv(Path(__file__).with_name(".env"))
 load_dotenv(Path(__file__).resolve().parents[1] / "web-app" / ".env")
 
 DB_URL = os.getenv("DATABASE_URL") or os.getenv("DB_URL")

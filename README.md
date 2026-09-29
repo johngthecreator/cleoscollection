@@ -20,10 +20,11 @@ In the scraper service's Variables, set `DATABASE_URL` and
 service. Do not commit either local `.env` file; the repo-level `.gitignore`
 excludes them.
 
-In the scraper service's Settings, set Cron Schedule to `*/20 * * * *` to run
-every 20 minutes (UTC). Railway starts `uv run cron.py` on that schedule; the
-script runs once and exits. Keep each run under 20 minutes so Railway does not
-skip an overlapping execution.
+In the scraper service's Settings, set Cron Schedule to `30 18 * * 1` for
+Monday at 12:30 PM Denver time during Mountain Daylight Time. Railway schedules
+use UTC, so change it to `30 19 * * 1` during Mountain Standard Time to keep the
+local run at 12:30 PM. Railway starts `uv run cron.py` on that schedule; the
+script runs once and exits.
 
 ## Run locally
 

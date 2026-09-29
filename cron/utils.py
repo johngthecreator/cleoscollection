@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+load_dotenv(Path(__file__).with_name(".env"))
 load_dotenv(Path(__file__).resolve().parents[1] / "web-app" / ".env")
 
 brightdata_api_key = os.getenv("BRIGHTDATA_API_KEY")
