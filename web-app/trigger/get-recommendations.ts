@@ -7,7 +7,7 @@ export const getRecommendations = task({
   maxDuration: 600,
   run: async (payload: { userId: string; userStyle: string; department: string }) => {
     const messages = [
-      new SystemMessage(`Recommend up to five sale items for this shopper. Use get_sales for Nike, Gymshark, Urban Outfitters, and AllSaints in the ${payload.department} department. Select products that fit these style preferences: ${payload.userStyle || "None provided"}. Return the exact sale IDs from the tool results; return fewer if there are no strong matches.`),
+      new SystemMessage(`Recommend up to five sale items for this shopper. Use get_sales for all the brands in the ${payload.department} department. Select products that fit these style preferences: ${payload.userStyle || "None provided"}. Return the exact sale IDs from the tool results; return fewer if there are no strong matches. Save your selected sale IDs using connect_recommendations with userId ${payload.userId}.`),
       new HumanMessage("Find recommendations for me."),
     ]
 

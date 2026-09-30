@@ -9,7 +9,7 @@ import { addMessages } from "@langchain/langgraph";
 
 import { db } from "@/db";
 import { recommendationsTable, salesTable } from "@/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 import { ToolMessage } from "@langchain/core/messages";
 import { GET_PRODUCT_DETAIL_FORMAT, GRAB_SALES_FORMAT } from "./prompts";
@@ -45,13 +45,29 @@ const getSales = tool(async ({ brand, department }) => {
   }),
 });
 
+const connectRecommendations = tool(async ({ saleIds, userId }) => {
+  await db.delete(recommendationsTable).where(
+    eq(recommendationsTable.userId, userId),
+  )
+  const recommendationConnections = saleIds.map((saleId: number) => { return { userId, saleId } })
+  await db.insert(recommendationsTable).values(recommendationConnections);
+}, {
+  name: "connect_recommendations",
+  description: "Connect recommendations with a given user",
+  schema: z.object({
+    saleIds: z.number().array().describe("an array of sale ids from products that were recommended"),
+    userId: z.string().describe("The id of the user we want to associate these products to"),
+  }),
+});
+
 // Augment the LLM with tools
 const toolsByName = {
   [getSales.name]: getSales,
+  [connectRecommendations.name]: connectRecommendations,
 };
 
 const tools = Object.values(toolsByName);
-const modelWithTools = model.bindTools(tools, {strict: true});
+const modelWithTools = model.bindTools(tools, { strict: true });
 
 
 const FinalAnswerSchema = z.object({
@@ -87,6 +103,7 @@ const callTool = task({ name: "callTool" }, async (toolCall: ToolCall) => {
     toolCall.name as keyof typeof toolsByName
   ] as StructuredToolInterface;
 
+  if (!toolFn) throw new Error(`Unknown tool: ${toolCall.name}`)
   const result = await toolFn.invoke(toolCall.args);
 
   let content = String(result);
@@ -123,23 +140,7 @@ export const stylist = entrypoint({ name: "stylist" }, async (input: { userId: s
     modelResponse = await callLlm(messages);
   }
   const result = await callStructured(addMessages(messages, [modelResponse]));
-  const saleIds = [...new Set(result.products.map((product) => product.saleId))].slice(0, 5);
-  const verifiedSales = saleIds.length
-    ? await db.select({ id: salesTable.id }).from(salesTable).where(and(
-        inArray(salesTable.id, saleIds),
-        eq(salesTable.department, input.department),
-        eq(salesTable.isActive, true),
-      ))
-    : [];
-
-  await db.transaction(async (tx) => {
-    await tx.delete(recommendationsTable).where(eq(recommendationsTable.userId, input.userId));
-    if (verifiedSales.length) {
-      await tx.insert(recommendationsTable).values(verifiedSales.map((sale) => ({ userId: input.userId, saleId: sale.id })));
-    }
-  });
-
-  return { count: verifiedSales.length };
+  return result;
 });
 
 export const shopper = entrypoint({ name: "shopper" }, async (messages: BaseMessage[]) => {
