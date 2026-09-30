@@ -5,6 +5,7 @@ import * as schema from "@/db/auth-schema"
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: ["https://cleoscollection.vercel.app"],
   database: drizzleAdapter(db, { provider: "pg", schema }),
   user: {
     additionalFields: {
